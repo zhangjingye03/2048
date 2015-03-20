@@ -169,22 +169,21 @@ function applyA(){
 	if(tmpani[0].split(',').length==0||tmpani[0].split.length(',')==1){return 0;}
 	for(n=0;n<tmpani.length;n++){
 		var cc=tmpani[n].split(',');
-		//moveE(alldiv[Math.ceil(i/4)][y(i)],'up',null,Math.ceil((i-4)/4));up
-		//moveE(alldiv[Math.ceil(i/4)][y(i)],'down',null,Math.ceil((i+4)/4));down
 		
 		if(cc[0]=='up'||cc[0]=='down'){
 			moveE(alldiv[cc[1]][cc[2]],cc[0],null,cc[3]);
-			
 		}else if(cc[0]=='left'||cc[0]=='right'){
 			moveE(alldiv[cc[1]][cc[2]],cc[0],cc[4]);
-			
 		}else if(cc[0]=='cbup'||cc[0]=='cbdown'){
-			moveE(alldiv[cc[1]][cc[2]],cc[0].slice(2),null,cc[3],true,cc[4]);
-			
+			alldiv[cc[1]][cc[2]].style.zIndex=++zdx;
+			moveE(alldiv[cc[1]][cc[2]],cc[0].slice(2),null,cc[3],true,cc[4]);			
 		}else if(cc[0]=='cbleft'||cc[0]=='cbright'){
-			moveE(alldiv[cc[1]][cc[2]],cc[0].slice(2),cc[4],null,true,cc[3]);
-			
+			alldiv[cc[1]][cc[2]].style.zIndex=++zdx;
+			moveE(alldiv[cc[1]][cc[2]],cc[0].slice(2),cc[4],null,true,cc[3]);			
 		}
+		tid++;
+		alldiv[cc[3]][cc[4]]=alldiv[cc[1]][cc[2]];
+		alldiv[cc[1]][cc[2]]=null;
 	}
 }
 
@@ -197,29 +196,59 @@ function add(syb){
 	//Well I'm a lazy boy so I didn't change this to 2D array...:-D
 	//Up Progress
 	if(syb=='up'){
-		for(o=1;o<=5;o++){
-			if(o==4){
+		for(o=1;o<=3;o++){
+			if(o==2){
 				for(i=5;i<=16;i++){
 					if(nums[i]=='-'){continue;}
 					if(nums[i-4]==nums[i]){nums[i-4]*=2;score+=nums[i-4]-0;nums[i]='-';canmove=true;
-						alldiv[Math.ceil(i/4)][y(i)].style.zIndex=++zdx;
-						moveE(alldiv[Math.ceil(i/4)][y(i)],'up',null,Math.ceil((i-4)/4),true,y(i));
-						tid++;
-						alldiv[Math.ceil((i-4)/4)][y(i)]=alldiv[Math.ceil(i/4)][y(i)];
-						alldiv[Math.ceil(i/4)][y(i)]=null;
+						giveA(Math.ceil(i/4),y(i),'cbup',Math.ceil((i-4)/4),y(i));
 					}
 				}
 			}
 			else{
-				for(i=5;i<=16;i++){
-					if(nums[i]=='-'){continue;}
-					if(nums[i-4]=='-'){nums[i-4]=nums[i];nums[i]='-';canmove=true;
-						moveE(alldiv[Math.ceil(i/4)][y(i)],'up',null,Math.ceil((i-4)/4));
-						tid++;
-						alldiv[Math.ceil((i-4)/4)][y(i)]=alldiv[Math.ceil(i/4)][y(i)];
-						alldiv[Math.ceil(i/4)][y(i)]=null;
+				for(i=13;i<=16;i++){
+					//For moving to the empty boxes.
+					var tm=0;
+					if(nums[i]!='-'){
+						if(nums[i-4]=='-'&&nums[i-8]=='-'&&nums[i-12]=='-'){
+							nums[i-12]=nums[i];tm=i-12;
+						}
+						else if(nums[i-8]=='-'&&nums[i-4]=='-'){
+							nums[i-8]=nums[i];tm=i-8;
+						}
+						else if(nums[i-4]=='-'){
+							nums[i-4]=nums[i];tm=i-4;
+						}
+						if(tm!=0){
+							canmove=true;nums[i]='-';
+							giveA(Math.ceil(i/4),y(i),'up',Math.ceil(tm/4),y(tm));
+						}
+						//important!
+						//TODO: places like (1,3) cannot move!!!
+					}
+					//For combining the boxes.
+					if(nums[i-12]==nums[i-8]&&nums[i-12]!='-'){
+						nums[i-12]=nums[i-8];
+						nums[i-8]='-';
+						giveA(Math.ceil((i-8)/4),y(i-8),'cbup',Math.ceil((i-12)/4),y(i-12));
+					}
+					if(nums[i-8]==nums[i-4]&&nums[i-8]!='-'){
+						nums[i-8]=nums[i-4];
+						nums[i-4]='-';
+						giveA(Math.ceil((i-4)/4),y(i-4),'cbup',Math.ceil((i-8)/4),y(i-8));
+					}
+					if(nums[i-4]==nums[i]&&nums[i-4]!='-'){
+						nums[i-4]=nums[i];
+						nums[i]='-';
+						giveA(Math.ceil(i/4),y(i),'cbup',Math.ceil((i-4)/4),y(i-4));
+					}
+					//Check for the last wrong-placed box.
+					if(nums[i-8]=='-'&&nums[i-4]!='-'){
+						nums[i-8]=nums[i-4];
+						giveA(Math.ceil((i-4)/4),y(i-4),'up',Math.ceil((i-8)/4),y(i-8));
 					}
 				}
+						
 			}
 		}
 	}
@@ -230,22 +259,19 @@ function add(syb){
 				for(i=12;i>=1;i--){
 					if(nums[i]=='-'){continue;}
 					if(nums[i+4]==nums[i]){nums[i+4]*=2;score+=nums[i+4]-0;nums[i]='-';canmove=true;
-						alldiv[Math.ceil(i/4)][y(i)].style.zIndex=++zdx;
-						moveE(alldiv[Math.ceil(i/4)][y(i)],'down',null,Math.ceil((i+4)/4),true,y(i));
-						tid++;
-						alldiv[Math.ceil((i+4)/4)][y(i)]=alldiv[Math.ceil(i/4)][y(i)];
-						alldiv[Math.ceil(i/4)][y(i)]=null;
+						giveA(Math.ceil(i/4),y(i),'cbdown',Math.ceil((i+4)/4),y(i));
 					}
 				}
 			}
 			else{
 				for(i=12;i>=1;i--){
 					if(nums[i]=='-'){continue;}
-					if(nums[i+4]=='-'){nums[i+4]=nums[i];nums[i]='-';canmove=true;
-						moveE(alldiv[Math.ceil(i/4)][y(i)],'down',null,Math.ceil((i+4)/4));
-						tid++;
-						alldiv[Math.ceil((i+4)/4)][y(i)]=alldiv[Math.ceil(i/4)][y(i)];
-						alldiv[Math.ceil(i/4)][y(i)]=null;
+					if(nums[i]==nums[i+4]||nums[i]==nums[i+8]||nums[i]==nums[i+12]){
+						if(nums[i+12]=='-'){nums[i+12]=nums[i];}
+						if(nums[i+8]=='-'){nums[i+8]=nums[i];}
+						if(nums[i+4]=='-'){nums[i+4]=nums[i];}
+						nums[i]='-';canmove=true;
+						giveA(Math.ceil(i/4),y(i),'down',Math.ceil((i+4)/4),y(i));					
 					}
 				}
 			}
@@ -259,11 +285,7 @@ function add(syb){
 					if(i==5||i==9||i==13){continue;}
 					if(nums[i]=='-'){continue;}
 					if(nums[i-1]==nums[i]){nums[i-1]*=2;score+=nums[i-1]-0;nums[i]='-';canmove=true;
-						alldiv[Math.ceil(i/4)][y(i)].style.zIndex=++zdx;
-						moveE(alldiv[Math.ceil(i/4)][y(i)],'left',y(i-1),null,true,Math.ceil(i/4));
-						tid++;
-						alldiv[Math.ceil(i/4)][y(i-1)]=alldiv[Math.ceil(i/4)][y(i)];
-						alldiv[Math.ceil(i/4)][y(i)]=null;
+						giveA(Math.ceil(i/4),y(i),'cbleft',Math.ceil(i/4),y(i-1));
 					}
 				}
 			}
